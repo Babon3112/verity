@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     if (!session?.user?._id) {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -33,7 +33,6 @@ export async function GET(request: Request) {
     const followingIds = following.map((f) => f.following);
 
     const posts = await PostModel.find({
-      isDeleted: false,
       $or: [
         { visibility: "public" },
         {
@@ -58,13 +57,13 @@ export async function GET(request: Request) {
         posts,
         page,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("FEED_ERROR:", error);
     return NextResponse.json(
       { success: false, message: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

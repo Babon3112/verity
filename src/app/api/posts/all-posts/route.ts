@@ -27,7 +27,6 @@ export async function GET(request: Request) {
 
     const posts = await PostModel.find({
       author: user._id,
-      isDeleted: false,
     })
       .sort({ createdAt: -1 })
       .select("-__v")

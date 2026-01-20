@@ -64,6 +64,7 @@ export async function POST(request: Request) {
         }),
         UserModel.findByIdAndUpdate(followingUser._id, {
           $inc: { followersCount: -1 },
+          $max: { likesCount: 0 },
         }),
       ]);
 

@@ -3,30 +3,53 @@
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Mail, Loader2, Link2, CheckCircle2 } from "lucide-react";
 
-const inputClass =
-  "w-full rounded-lg border border-neutral-700 bg-neutral-900 px-4 py-3 text-sm " +
-  "text-neutral-100 placeholder-neutral-500 outline-none transition " +
-  "focus:border-[#00F7FF] focus:ring-2 focus:ring-[#00F7FF]/30";
+const inputWrap =
+  "flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 " +
+  "transition focus-within:border-cyan-300/40";
+
+const inputField =
+  "w-full bg-transparent text-sm text-white placeholder:text-slate-500 outline-none";
 
 const ForgotPassword = () => {
   const [identifier, setIdentifier] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+
   const router = useRouter();
 
-  const baseUrl = `${window.location.protocol}//${window.location.host}`;
-  const resetPasswordUrl = `${baseUrl}/reset-password/${identifier}`;
-
   const handleSubmit = async () => {
-    if (!identifier) return;
+    setError("");
+    setSent(false);
+
+    if (!identifier.trim()) {
+      setError("Please enter your email or username.");
+      return;
+    }
 
     try {
       setLoading(true);
+
+      const baseUrl = window.location.origin;
+      const resetPasswordUrl = `${baseUrl}/reset-password/${encodeURIComponent(
+        identifier.trim()
+      )}`;
+
       await axios.post("/api/forgot-password", {
-        identifier,
+        identifier: identifier.trim(),
         resetPasswordUrl,
       });
-      router.replace(`/reset-password/${identifier}`);
+
+      setSent(true);
+
+      // optional redirect (keep if your flow depends on it)
+      setTimeout(() => {
+        router.replace(`/reset-password/${encodeURIComponent(identifier.trim())}`);
+      }, 700);
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Failed to send reset link.");
     } finally {
       setLoading(false);
     }
@@ -34,35 +57,68 @@ const ForgotPassword = () => {
 
   return (
     <div className="space-y-4">
-      <div className="mt-4 text-center">
-        <h1 className="text-lg font-semibold text-neutral-100">
-          Reset your password
-        </h1>
-        <p className="mt-1 text-sm text-[#B0FFFA]">
-          We’ll send you a secure reset link
+      {/* Header */}
+      <div className="text-center">
+        <h1 className="text-xl font-semibold text-white">Reset your password</h1>
+        <p className="mt-1 text-sm text-slate-400">
+          We’ll send you a secure reset link.
         </p>
       </div>
 
-      <input
-        className={inputClass}
-        placeholder="Email or username"
-        value={identifier}
-        onChange={(e) => setIdentifier(e.target.value)}
-      />
+      {/* Input */}
+      <div className={inputWrap}>
+        <Mail className="h-4 w-4 text-slate-400" />
+        <input
+          className={inputField}
+          placeholder="Email or username"
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
+        />
+      </div>
 
+      {/* Success */}
+      {sent && !error && (
+        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3">
+          <p className="flex items-center justify-center gap-2 text-sm text-emerald-200">
+            <CheckCircle2 className="h-4 w-4" />
+            Reset link sent (check your inbox)
+          </p>
+        </div>
+      )}
+
+      {/* Error */}
+      {error && (
+        <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3">
+          <p className="text-sm text-red-200 text-center">{error}</p>
+        </div>
+      )}
+
+      {/* Button */}
       <button
-        disabled={loading}
+        disabled={loading || !identifier.trim()}
         onClick={handleSubmit}
         className="
-          w-full rounded-lg py-3 text-sm font-medium text-black
-          bg-[#00F7FF] brightness-75
-          transition hover:brightness-110 active:scale-[0.99]
-          disabled:from-neutral-700 disabled:to-neutral-700
-          disabled:text-neutral-400 disabled:cursor-not-allowed
+          w-full rounded-2xl py-3.5 text-sm font-semibold text-black
+          bg-cyan-300 transition hover:brightness-110 active:scale-[0.99]
+          disabled:bg-white/10 disabled:text-slate-500 disabled:cursor-not-allowed
         "
       >
-        {loading ? "Sending…" : "Send reset link"}
+        {loading ? (
+          <span className="flex items-center justify-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Sending...
+          </span>
+        ) : (
+          <span className="flex items-center justify-center gap-2">
+            <Link2 className="h-4 w-4" />
+            Send reset link
+          </span>
+        )}
       </button>
+
+      <p className="text-center text-xs text-slate-500">
+        If you don’t see the email, check spam/junk folder.
+      </p>
     </div>
   );
 };

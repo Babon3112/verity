@@ -7,6 +7,15 @@ import axios from "axios";
 import { useSession } from "next-auth/react";
 import Navbar from "@/components/navbar";
 
+import {
+  BadgeCheck,
+  UserPlus,
+  UserCheck,
+  Pencil,
+  ImageIcon,
+  Play,
+} from "lucide-react";
+
 /* ================= TYPES ================= */
 
 interface UserProfile {
@@ -51,9 +60,7 @@ const ProfilePage = () => {
 
   /* ========== AUTH GUARD ========== */
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.replace("/");
-    }
+    if (status === "unauthenticated") router.replace("/");
   }, [status, router]);
 
   /* ========== FETCH PROFILE ========== */
@@ -64,7 +71,7 @@ const ProfilePage = () => {
     const fetchProfile = async () => {
       try {
         const res = await axios.get("/api/profile", {
-          params: { username: username },
+          params: { username },
         });
         setUser(res.data.user);
       } catch {
@@ -143,115 +150,194 @@ const ProfilePage = () => {
                 ? prev.followersCount + 1
                 : prev.followersCount - 1,
             }
-          : prev
+          : prev,
       );
     } finally {
       setFollowLoading(false);
     }
   };
 
-  /* ========== STATES ========== */
+  /* ================= STATES ================= */
 
   if (status === "loading" || loading) {
     return (
-      <div className="flex justify-center mt-24 text-neutral-400">
-        Loading profile…
+      <div className="min-h-screen flex flex-col bg-[#0B1112]">
+        <Navbar />
+
+        <main className="flex-1 px-4 py-10">
+          <div className="mx-auto max-w-3xl">
+            <ProfileSkeleton />
+          </div>
+        </main>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <>
+      <div className="min-h-screen flex flex-col bg-[#0B1112]">
         <Navbar />
-        <div className="flex justify-center mt-24 text-neutral-400">
-          User not found
-        </div>
-      </>
+
+        <main className="flex-1 px-4 py-10">
+          <div className="mx-auto max-w-3xl">
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-center">
+              <p className="text-sm text-slate-300">User not found</p>
+              <p className="mt-1 text-xs text-slate-500">
+                This profile doesn’t exist or was removed.
+              </p>
+            </div>
+          </div>
+        </main>
+      </div>
     );
   }
 
-  /* ========== UI ========== */
+  /* ================= UI ================= */
 
   return (
-    <>
+    <div className="min-h-screen flex flex-col bg-[#0B1112]">
       <Navbar />
 
-      <main className="min-h-screen bg-[#0f1115]">
-        <div className="max-w-3xl mx-auto px-4 py-12">
-          {/* ===== PROFILE CARD ===== */}
-          <div className="rounded-2xl border border-white/5 bg-[#151821] p-8">
-            <div className="flex items-center gap-6">
-              <Image
-                src={user.avatar || "/avatar-placeholder.png"}
-                alt={user.username}
-                width={120}
-                height={120}
-                className="rounded-full border-2 border-[#B0FFFA]"
-              />
+      <main className="flex-1">
+        <div className="mx-auto max-w-3xl px-4 py-10">
+          {/* ===== PROFILE HEADER CARD ===== */}
+          <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#0F1718] shadow-[0_0_0_1px_rgba(255,255,255,0.04)]">
+            {/* Soft glow */}
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute -top-32 -right-32 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
+              <div className="absolute -bottom-32 -left-32 h-72 w-72 rounded-full bg-emerald-400/10 blur-3xl" />
+            </div>
 
-              <div className="flex-1">
-                <h1 className="text-2xl font-semibold text-neutral-100">
-                  {user.fullName}
-                </h1>
-                <p className="text-sm text-neutral-400">@{user.username}</p>
+            <div className="relative p-6 sm:p-7">
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+                {/* Left */}
+                <div className="flex items-start gap-4">
+                  <div className="relative h-20 w-20 overflow-hidden rounded-full border border-white/10 ring-2 ring-cyan-300/20 shadow-lg sm:h-24 sm:w-24">
+                    <Image
+                      src={user.avatar || "/avatar-placeholder.png"}
+                      alt={user.username}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+
+                  <div className="pt-1">
+                    <div className="flex items-center gap-2">
+                      <h1 className="text-xl font-semibold text-white">
+                        {user.fullName}
+                      </h1>
+
+                      {user.isVerified && (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-cyan-300/20 bg-cyan-400/10 px-2 py-1 text-xs text-cyan-200">
+                          <BadgeCheck className="h-4 w-4" />
+                          Verified
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="mt-1 text-sm text-slate-400">
+                      @{user.username}
+                    </p>
+
+                    {user.bio && (
+                      <p className="mt-3 max-w-lg text-sm leading-relaxed text-slate-300">
+                        {user.bio}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right */}
+                <div className="flex items-center gap-2 sm:justify-end">
+                  {isOwnProfile ? (
+                    <button
+                      onClick={() => alert("Edit profile coming soon")}
+                      className="
+                        inline-flex items-center gap-2 rounded-2xl
+                        border border-white/10 bg-white/5 px-4 py-2
+                        text-sm text-slate-200 transition
+                        hover:bg-white/10 active:scale-[0.98]
+                      "
+                    >
+                      <Pencil className="h-4 w-4" />
+                      Edit profile
+                    </button>
+                  ) : (
+                    <button
+                      onClick={toggleFollow}
+                      disabled={followLoading}
+                      className={`
+                        inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold
+                        transition active:scale-[0.98]
+                        disabled:cursor-not-allowed disabled:opacity-60
+                        ${
+                          isFollowing
+                            ? "border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
+                            : "bg-cyan-300 text-black hover:brightness-110"
+                        }
+                      `}
+                    >
+                      {followLoading ? (
+                        "Please wait…"
+                      ) : isFollowing ? (
+                        <>
+                          <UserCheck className="h-4 w-4" />
+                          Following
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="h-4 w-4" />
+                          Follow
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
               </div>
 
-              {isOwnProfile ? (
-                <button className="rounded-lg px-4 py-2 text-sm bg-neutral-800 text-neutral-100 hover:bg-neutral-700">
-                  Edit profile
-                </button>
-              ) : (
-                <button
-                  onClick={toggleFollow}
-                  disabled={followLoading}
-                  className={
-                    isFollowing
-                      ? "rounded-lg px-4 py-2 text-sm bg-neutral-800 text-white"
-                      : "rounded-lg px-4 py-2 text-sm bg-[#00F7FF] text-black"
-                  }
-                >
-                  {followLoading
-                    ? "Please wait…"
-                    : isFollowing
-                    ? "Following"
-                    : "Follow"}
-                </button>
-              )}
+              {/* Stats */}
+              <div className="mt-6 grid grid-cols-3 gap-3">
+                <Stat label="Posts" value={user.postsCount} />
+                <Stat label="Followers" value={user.followersCount} />
+                <Stat label="Following" value={user.followingCount} />
+              </div>
             </div>
-
-            {user.bio && <p className="mt-6 text-neutral-300">{user.bio}</p>}
-
-            <div className="mt-8 grid grid-cols-3 gap-6 text-center">
-              <Stat label="Posts" value={user.postsCount} />
-              <Stat label="Followers" value={user.followersCount} />
-              <Stat label="Following" value={user.followingCount} />
-            </div>
-          </div>
+          </section>
 
           {/* ===== POSTS GRID ===== */}
-          <div className="mt-10">
-            {postsLoading && (
-              <p className="text-center text-neutral-400">Loading posts…</p>
-            )}
+          <section className="mt-8">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white">Posts</h2>
+              <p className="text-xs text-slate-500">
+                {postsLoading ? "Loading…" : `${posts.length} total`}
+              </p>
+            </div>
+
+            {postsLoading && <PostsSkeleton />}
 
             {!postsLoading && posts.length === 0 && (
-              <p className="text-center text-neutral-500">No posts yet</p>
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
+                  <ImageIcon className="h-5 w-5 text-slate-400" />
+                </div>
+                <p className="text-sm text-slate-300">No posts yet</p>
+                <p className="mt-1 text-xs text-slate-500">
+                  When they post, it’ll show up here.
+                </p>
+              </div>
             )}
 
             {!postsLoading && posts.length > 0 && (
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                 {posts.map((post) => (
-                  <div
+                  <button
                     key={post._id}
+                    onClick={() => router.push(`/post/${post._id}`)}
                     className="
-            group relative
-            aspect-square
-            rounded-xl
-            overflow-hidden
-            border border-white/5
-            bg-[#151821]
-          "
+                      group relative aspect-square overflow-hidden rounded-2xl
+                      border border-white/10 bg-white/3
+                      text-left transition hover:border-white/20 active:scale-[0.99]
+                    "
                   >
                     {/* MEDIA */}
                     {post.media ? (
@@ -260,64 +346,105 @@ const ProfilePage = () => {
                           src={post.media.url}
                           alt="post media"
                           fill
-                          className="object-cover"
+                          className="object-contain transition duration-300 group-hover:scale-[1.03]"
                         />
                       ) : (
-                        <video
-                          src={post.media.url}
-                          className="h-full w-full object-cover"
-                          muted
-                          loop
-                        />
+                        <div className="relative h-full w-full">
+                          <video
+                            src={post.media.url}
+                            className="h-full w-full object-contain"
+                            muted
+                            loop
+                            autoPlay
+                            playsInline
+                          />
+                          <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-xl border border-white/10 bg-black/60 px-2 py-1 text-xs text-white backdrop-blur">
+                            <Play className="h-3.5 w-3.5" />
+                            Video
+                          </div>
+                        </div>
                       )
                     ) : (
-                      <div
-                        className="
-              h-full w-full
-              flex items-center justify-center
-              p-4 text-sm text-neutral-300
-              text-center
-            "
-                      >
-                        {post.content}
+                      <div className="flex h-full w-full items-center justify-center p-4 text-center">
+                        <p className="line-clamp-5 text-sm text-slate-200">
+                          {post.content}
+                        </p>
                       </div>
                     )}
 
                     {/* OVERLAY */}
                     <div
                       className="
-            absolute inset-0
-            bg-black/60 opacity-0
-            group-hover:opacity-100
-            transition
-            flex items-end
-            p-3
-          "
+                        absolute inset-0 flex items-end p-3
+                        bg-linear-to-t from-black/70 via-black/20 to-transparent
+                        opacity-0 transition duration-200 group-hover:opacity-100
+                      "
                     >
-                      <p className="text-xs text-neutral-200 line-clamp-3">
+                      <p className="line-clamp-3 text-xs text-slate-200">
                         {post.content}
                       </p>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             )}
-          </div>
+          </section>
         </div>
       </main>
-    </>
+    </div>
   );
 };
 
-/* ================= STAT COMPONENT ================= */
+/* ================= SMALL COMPONENTS ================= */
 
 const Stat = ({ label, value }: { label: string; value: number }) => (
-  <div className="rounded-xl bg-neutral-800/60 py-4">
-    <p className="text-xl font-semibold text-neutral-100">{value}</p>
-    <p className="mt-1 text-xs uppercase tracking-wide text-neutral-400">
+  <div className="rounded-2xl border border-white/10 bg-white/5 py-4 text-center">
+    <p className="tabular-nums text-xl font-semibold text-white">{value}</p>
+    <p className="mt-1 text-[11px] uppercase tracking-wide text-slate-500">
       {label}
     </p>
   </div>
 );
+
+/* ================= SKELETONS ================= */
+
+const ProfileSkeleton = () => {
+  return (
+    <div className="animate-pulse overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start gap-4">
+          <div className="h-24 w-24 rounded-full bg-white/10" />
+
+          <div className="pt-2">
+            <div className="h-5 w-44 rounded bg-white/10" />
+            <div className="mt-2 h-4 w-28 rounded bg-white/10" />
+            <div className="mt-3 h-3 w-64 rounded bg-white/10" />
+          </div>
+        </div>
+
+        <div className="h-10 w-28 rounded-2xl bg-white/10" />
+      </div>
+
+      <div className="mt-6 grid grid-cols-3 gap-3">
+        <div className="h-20 rounded-2xl bg-white/10" />
+        <div className="h-20 rounded-2xl bg-white/10" />
+        <div className="h-20 rounded-2xl bg-white/10" />
+      </div>
+    </div>
+  );
+};
+
+const PostsSkeleton = () => {
+  return (
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, idx) => (
+        <div
+          key={idx}
+          className="aspect-square animate-pulse rounded-2xl border border-white/10 bg-white/5"
+        />
+      ))}
+    </div>
+  );
+};
 
 export default ProfilePage;

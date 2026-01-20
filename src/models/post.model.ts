@@ -61,14 +61,8 @@ const postSchema = new Schema<Post>(
       default: 0,
       min: 0,
     },
-
-    isDeleted: {
-      type: Boolean,
-      default: false,
-      index: true,
-    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 postSchema.index({ author: 1, createdAt: -1 });
