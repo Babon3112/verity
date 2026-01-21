@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
-import LikeModel from "@/models/like.model";
+import CommentModel from "@/models/comment.model";
 import PostModel from "@/models/post.model";
 
 export async function GET(request: Request) {
@@ -8,11 +8,7 @@ export async function GET(request: Request) {
     await dbConnect();
 
     const { searchParams } = new URL(request.url);
-
     const postId = searchParams.get("postId")?.trim();
-    const page = Math.max(Number(searchParams.get("page")) || 1, 1);
-    const limit = Math.min(Number(searchParams.get("limit")) || 10, 50);
-    const skip = (page - 1) * limit;
 
     if (!postId) {
       return NextResponse.json(
@@ -22,7 +18,6 @@ export async function GET(request: Request) {
     }
 
     const postExists = await PostModel.exists({ _id: postId });
-
     if (!postExists) {
       return NextResponse.json(
         { success: false, message: "Post not found" },
@@ -30,28 +25,43 @@ export async function GET(request: Request) {
       );
     }
 
-    const likes = await LikeModel.find({ post: postId })
-      .populate("user", "username fullName avatar")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
+    const allComments = await CommentModel.find({ post: postId })
+      .populate("author", "username fullName avatar")
+      .sort({ createdAt: 1 })
       .lean();
 
-    const totalLikes = await LikeModel.countDocuments({ post: postId });
+    // Thread format
+    const map = new Map<string, any>();
+    const roots: any[] = [];
+
+    for (const c of allComments) {
+      map.set(c._id.toString(), { ...c, replies: [] });
+    }
+
+    for (const c of allComments) {
+      const id = c._id.toString();
+
+      if (!c.parentComment) {
+        roots.push(map.get(id));
+        continue;
+      }
+
+      const parentId = c.parentComment.toString();
+      const parent = map.get(parentId);
+
+      if (parent) {
+        parent.replies.push(map.get(id));
+      } else {
+        roots.push(map.get(id));
+      }
+    }
 
     return NextResponse.json(
-      {
-        success: true,
-        postId,
-        totalLikes,
-        page,
-        limit,
-        likes,
-      },
+      { success: true, comments: roots },
       { status: 200 }
     );
   } catch (error) {
-    console.error("GET_ALL_LIKES_ERROR:", error);
+    console.error("COMMENT_FETCH_ERROR:", error);
 
     return NextResponse.json(
       { success: false, message: "Internal server error" },

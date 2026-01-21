@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { useParams, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ShieldAlert,
   KeyRound,
@@ -13,15 +13,18 @@ import {
   CheckCircle2,
   XCircle,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 const inputWrap =
   "flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 " +
-  "transition focus-within:border-cyan-300/40";
+  "transition focus-within:border-cyan-300/40 focus-within:bg-white/[0.07]";
 
 const inputField =
   "w-full bg-transparent text-sm text-white placeholder:text-slate-500 outline-none";
 
 const ResetPasswordPage = () => {
+  const { data: session } = useSession();
+
   const [resetPasswordCode, setResetPasswordCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -42,6 +45,10 @@ const ResetPasswordPage = () => {
     if (Array.isArray(p)) return p[0] || "";
     return p;
   }, [params]);
+
+  useEffect(() => {
+    if (session) router.replace("/");
+  }, [session, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,15 +104,23 @@ const ResetPasswordPage = () => {
     password === confirmPassword;
 
   return (
-    <main className="relative min-h-screen bg-[#0B1112] px-4">
+    <main className="relative min-h-screen bg-[#070B0C] px-4 text-white">
       {/* Background glow */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-cyan-400/10 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-emerald-400/10 blur-3xl" />
+        <div className="absolute -top-40 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-cyan-400/10 blur-3xl" />
+        <div className="absolute top-56 -right-35 h-96 w-96 rounded-full bg-fuchsia-400/10 blur-3xl" />
+        <div className="absolute -bottom-40 -left-35 h-96 w-96 rounded-full bg-emerald-400/10 blur-3xl" />
       </div>
 
       <div className="relative flex min-h-screen items-center justify-center">
-        <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[#0F1718] p-8 shadow-[0_0_0_1px_rgba(255,255,255,0.04)]">
+        <div
+          className="
+            w-full max-w-md overflow-hidden rounded-[30px]
+            border border-white/10 bg-black/30 p-8
+            backdrop-blur-xl
+            shadow-[0_0_0_1px_rgba(255,255,255,0.03)]
+          "
+        >
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Header */}
             <div className="text-center space-y-2">
@@ -113,7 +128,7 @@ const ResetPasswordPage = () => {
                 <ShieldAlert className="h-5 w-5 text-cyan-300" />
               </div>
 
-              <h1 className="text-xl font-semibold text-white">
+              <h1 className="text-xl font-semibold tracking-tight text-white">
                 Set a new password
               </h1>
 
@@ -153,10 +168,15 @@ const ResetPasswordPage = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+
               <button
                 type="button"
                 onClick={() => setShowPassword((p) => !p)}
-                className="rounded-xl p-1 text-slate-400 hover:text-white transition"
+                className="
+                  rounded-xl border border-white/10 bg-white/5 p-1.5
+                  text-slate-300 transition hover:bg-white/10 hover:text-white
+                  active:scale-[0.98]
+                "
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
@@ -177,10 +197,15 @@ const ResetPasswordPage = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
+
               <button
                 type="button"
                 onClick={() => setShowConfirm((p) => !p)}
-                className="rounded-xl p-1 text-slate-400 hover:text-white transition"
+                className="
+                  rounded-xl border border-white/10 bg-white/5 p-1.5
+                  text-slate-300 transition hover:bg-white/10 hover:text-white
+                  active:scale-[0.98]
+                "
                 aria-label={showConfirm ? "Hide password" : "Show password"}
               >
                 {showConfirm ? (
@@ -221,18 +246,24 @@ const ResetPasswordPage = () => {
             <button
               disabled={!canSubmit}
               className="
-                w-full rounded-2xl py-3.5 text-sm font-semibold text-black
-                bg-cyan-300 transition hover:brightness-110 active:scale-[0.99]
-                disabled:bg-white/10 disabled:text-slate-500 disabled:cursor-not-allowed
+                relative w-full rounded-2xl py-3.5 text-sm font-semibold text-black
+                bg-linear-to-r from-cyan-300 to-emerald-200
+                shadow-[0_10px_25px_-18px_rgba(34,211,238,0.65)]
+                transition hover:brightness-110 active:scale-[0.99]
+                disabled:bg-white/10 disabled:text-slate-500 disabled:cursor-not-allowed disabled:shadow-none
               "
             >
+              {loading && (
+                <span className="absolute inset-0 rounded-2xl bg-white/10 animate-pulse" />
+              )}
+
               {loading ? (
-                <span className="flex items-center justify-center gap-2">
+                <span className="relative flex items-center justify-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Resetting...
                 </span>
               ) : (
-                "Reset password"
+                <span className="relative">Reset password</span>
               )}
             </button>
 

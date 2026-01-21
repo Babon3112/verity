@@ -28,9 +28,7 @@ const Navbar = () => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (!dropdownRef.current) return;
-      if (!dropdownRef.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
+      if (!dropdownRef.current.contains(event.target as Node)) setOpen(false);
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -40,100 +38,120 @@ const Navbar = () => {
   if (!session) return null;
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-white/10 bg-black/60 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
-        {/* LEFT */}
-        <div className="flex items-center gap-4">
-          <Link
-            href="/"
-            className="text-lg font-semibold text-white tracking-wide"
-          >
-            Verity
-          </Link>
+    <nav className="sticky top-0 z-50">
+      {/* Glass background */}
+      <div className="border-b border-white/10 bg-black/50 backdrop-blur-xl">
+        {/* Glow line */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-cyan-300/30 to-transparent" />
 
-          {/* Search (hidden on small screens) */}
-          <form
-            onSubmit={handleSubmit}
-            className="
-              hidden sm:flex items-center gap-2
-              w-85 rounded-2xl
-              bg-white/5 px-4 py-2.5
-              border border-white/10
-              focus-within:border-cyan-300/40
-              transition
-            "
-          >
-            <Search className="h-4 w-4 text-slate-400" />
-            <input
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
+          {/* LEFT */}
+          <div className="flex items-center gap-4">
+            {/* Logo */}
+            <Link
+              href="/"
+              className="flex items-center gap-2 select-none"
+            >
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
+                <span className="text-sm font-bold text-cyan-200">V</span>
+              </span>
+              <span className="text-lg font-semibold text-white tracking-wide">
+                Verity
+              </span>
+            </Link>
+
+            {/* Search (desktop) */}
+            <form
+              onSubmit={handleSubmit}
               className="
-                w-full bg-transparent text-sm text-white
-                placeholder:text-slate-500 outline-none
-              "
-              placeholder="Search username..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-          </form>
-        </div>
-
-        {/* RIGHT */}
-        <div className="flex items-center gap-3">
-          {/* Post button */}
-          <Link
-            href="/post/create"
-            className="
-              inline-flex items-center gap-2 rounded-2xl
-              bg-cyan-300 px-4 py-2 text-sm font-semibold text-black
-              transition hover:brightness-110 active:scale-[0.98]
-            "
-          >
-            <Plus className="h-4 w-4" />
-            Post
-          </Link>
-
-          {/* Profile Dropdown */}
-          <div ref={dropdownRef} className="relative">
-            <button
-              onClick={() => setOpen((p) => !p)}
-              className="
-                flex items-center gap-2 rounded-2xl
-                bg-white/5 px-2 py-1.5
+                hidden sm:flex items-center gap-2
+                w-85 rounded-2xl
+                bg-white/5 px-4 py-2.5
                 border border-white/10
-                hover:bg-white/10 transition
+                focus-within:border-cyan-300/40
+                focus-within:bg-white/[0.07]
+                transition
               "
             >
-              <div className="relative h-9 w-9 overflow-hidden rounded-full ring-1 ring-white/10">
-                <Image
-                  src={session.user?.avatar || "/avatar-placeholder.png"}
-                  alt="profile"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-
-              <div className="hidden md:block text-left leading-tight">
-                <p className="text-sm font-semibold text-white">
-                  {session.user?.fullName || "User"}
-                </p>
-                <p className="text-xs text-slate-400">
-                  @{session.user?.username}
-                </p>
-              </div>
-
-              <ChevronDown
-                className={`h-4 w-4 text-slate-400 transition ${
-                  open ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-
-            {open && (
-              <div
+              <Search className="h-4 w-4 text-slate-400" />
+              <input
                 className="
-                  absolute right-0 mt-2 w-52 overflow-hidden rounded-2xl
-                  border border-white/10 bg-black/80 backdrop-blur-xl
-                  shadow-xl
+                  w-full bg-transparent text-sm text-white
+                  placeholder:text-slate-500 outline-none
                 "
+                placeholder="Search username..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </form>
+          </div>
+
+          {/* RIGHT */}
+          <div className="flex items-center gap-3">
+            {/* Post button */}
+            <Link
+              href="/post/create"
+              className="
+                inline-flex items-center gap-2 rounded-2xl
+                bg-linear-to-r from-cyan-300 to-emerald-200
+                px-4 py-2 text-sm font-semibold text-black
+                shadow-[0_10px_25px_-15px_rgba(34,211,238,0.65)]
+                transition hover:brightness-110 active:scale-[0.98]
+              "
+            >
+              <Plus className="h-4 w-4" />
+              Post
+            </Link>
+
+            {/* Profile Dropdown */}
+            <div ref={dropdownRef} className="relative">
+              <button
+                onClick={() => setOpen((p) => !p)}
+                className="
+                  flex items-center gap-2 rounded-2xl
+                  bg-white/5 px-2 py-1.5
+                  border border-white/10
+                  hover:bg-white/10 transition
+                "
+              >
+                <div className="relative h-9 w-9 overflow-hidden rounded-full ring-1 ring-white/10">
+                  <Image
+                    src={session.user?.avatar || "/avatar-placeholder.png"}
+                    alt="profile"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+
+                <div className="hidden md:block text-left leading-tight">
+                  <p className="text-sm font-semibold text-white">
+                    {session.user?.fullName || "User"}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    @{session.user?.username}
+                  </p>
+                </div>
+
+                <ChevronDown
+                  className={`h-4 w-4 text-slate-400 transition ${
+                    open ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {/* Dropdown */}
+              <div
+                className={`
+                  absolute right-0 mt-2 w-56 overflow-hidden rounded-2xl
+                  border border-white/10 bg-black/80 backdrop-blur-xl
+                  shadow-[0_12px_40px_-18px_rgba(0,0,0,0.8)]
+                  transition-all duration-200
+                  ${
+                    open
+                      ? "opacity-100 translate-y-0"
+                      : "pointer-events-none opacity-0 -translate-y-1"
+                  }
+                `}
               >
                 <button
                   onClick={() => {
@@ -162,34 +180,35 @@ const Navbar = () => {
                   Sign out
                 </button>
               </div>
-            )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Mobile Search */}
-      <div className="sm:hidden border-t border-white/10 px-4 py-3">
-        <form
-          onSubmit={handleSubmit}
-          className="
-            flex items-center gap-2 rounded-2xl
-            bg-white/5 px-4 py-2.5
-            border border-white/10
-            focus-within:border-cyan-300/40
-            transition
-          "
-        >
-          <Search className="h-4 w-4 text-slate-400" />
-          <input
+        {/* Mobile Search */}
+        <div className="sm:hidden border-t border-white/10 px-4 py-3">
+          <form
+            onSubmit={handleSubmit}
             className="
-              w-full bg-transparent text-sm text-white
-              placeholder:text-slate-500 outline-none
+              flex items-center gap-2 rounded-2xl
+              bg-white/5 px-4 py-2.5
+              border border-white/10
+              focus-within:border-cyan-300/40
+              focus-within:bg-white/[0.07]
+              transition
             "
-            placeholder="Search username..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </form>
+          >
+            <Search className="h-4 w-4 text-slate-400" />
+            <input
+              className="
+                w-full bg-transparent text-sm text-white
+                placeholder:text-slate-500 outline-none
+              "
+              placeholder="Search username..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </form>
+        </div>
       </div>
     </nav>
   );

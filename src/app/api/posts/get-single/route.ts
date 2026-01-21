@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
-import LikeModel from "@/models/like.model";
 import PostModel from "@/models/post.model";
 
 export async function GET(request: Request) {
@@ -8,11 +7,7 @@ export async function GET(request: Request) {
     await dbConnect();
 
     const { searchParams } = new URL(request.url);
-
     const postId = searchParams.get("postId")?.trim();
-    const page = Math.max(Number(searchParams.get("page")) || 1, 1);
-    const limit = Math.min(Number(searchParams.get("limit")) || 10, 50);
-    const skip = (page - 1) * limit;
 
     if (!postId) {
       return NextResponse.json(
@@ -21,37 +16,23 @@ export async function GET(request: Request) {
       );
     }
 
-    const postExists = await PostModel.exists({ _id: postId });
+    const post = await PostModel.findById(postId)
+      .populate("author", "username fullName avatar")
+      .lean();
 
-    if (!postExists) {
+    if (!post) {
       return NextResponse.json(
         { success: false, message: "Post not found" },
         { status: 404 }
       );
     }
 
-    const likes = await LikeModel.find({ post: postId })
-      .populate("user", "username fullName avatar")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
-
-    const totalLikes = await LikeModel.countDocuments({ post: postId });
-
     return NextResponse.json(
-      {
-        success: true,
-        postId,
-        totalLikes,
-        page,
-        limit,
-        likes,
-      },
+      { success: true, post },
       { status: 200 }
     );
   } catch (error) {
-    console.error("GET_ALL_LIKES_ERROR:", error);
+    console.error("GET_SINGLE_POST_ERROR:", error);
 
     return NextResponse.json(
       { success: false, message: "Internal server error" },

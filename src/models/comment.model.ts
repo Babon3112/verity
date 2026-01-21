@@ -7,7 +7,6 @@ export interface Comment extends Document {
   content: string;
 
   parentComment?: Types.ObjectId; // for replies
-  isDeleted: boolean;
 }
 
 const commentSchema = new Schema<Comment>(
@@ -36,11 +35,6 @@ const commentSchema = new Schema<Comment>(
       type: Schema.Types.ObjectId,
       ref: "Comment",
       default: null,
-    },
-
-    isDeleted: {
-      type: Boolean,
-      default: false,
     },
   },
   { timestamps: true }

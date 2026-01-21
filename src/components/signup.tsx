@@ -22,7 +22,7 @@ type UsernameStatus = "idle" | "checking" | "available" | "taken" | "invalid";
 
 const inputWrap =
   "flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 " +
-  "transition focus-within:border-cyan-300/40";
+  "transition focus-within:border-cyan-300/40 focus-within:bg-white/[0.07]";
 
 const inputField =
   "w-full bg-transparent text-sm text-white placeholder:text-slate-500 outline-none";
@@ -150,14 +150,30 @@ const SignUp = () => {
 
   const usernameHint = (() => {
     if (usernameStatus === "idle")
-      return { text: "Pick a unique username.", icon: null };
+      return { text: "Pick a unique username.", tone: "neutral", icon: null };
     if (usernameStatus === "invalid")
-      return { text: "Minimum 3 characters.", icon: <AlertCircle className="h-4 w-4" /> };
+      return {
+        text: "Minimum 3 characters.",
+        tone: "warn",
+        icon: <AlertCircle className="h-4 w-4" />,
+      };
     if (usernameStatus === "checking")
-      return { text: "Checking availability…", icon: <Loader2 className="h-4 w-4 animate-spin" /> };
+      return {
+        text: "Checking availability…",
+        tone: "neutral",
+        icon: <Loader2 className="h-4 w-4 animate-spin" />,
+      };
     if (usernameStatus === "available")
-      return { text: "Username available", icon: <CheckCircle2 className="h-4 w-4" /> };
-    return { text: "Username already taken", icon: <XCircle className="h-4 w-4" /> };
+      return {
+        text: "Username available",
+        tone: "good",
+        icon: <CheckCircle2 className="h-4 w-4" />,
+      };
+    return {
+      text: "Username already taken",
+      tone: "bad",
+      icon: <XCircle className="h-4 w-4" />,
+    };
   })();
 
   const canSubmit =
@@ -174,7 +190,9 @@ const SignUp = () => {
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-xl font-semibold text-white">Create your account</h1>
+        <h1 className="text-xl font-semibold text-white tracking-tight">
+          Create your account
+        </h1>
         <p className="mt-1 text-sm text-slate-400">
           Start with the essentials — we’ll handle the rest.
         </p>
@@ -206,11 +224,13 @@ const SignUp = () => {
         <div
           className={[
             "flex items-center gap-2 text-xs",
-            usernameStatus === "available"
+            usernameHint.tone === "good"
               ? "text-emerald-300"
-              : usernameStatus === "taken"
-              ? "text-red-300"
-              : "text-slate-400",
+              : usernameHint.tone === "bad"
+                ? "text-red-300"
+                : usernameHint.tone === "warn"
+                  ? "text-yellow-200"
+                  : "text-slate-400",
           ].join(" ")}
         >
           {usernameHint.icon}
@@ -245,40 +265,48 @@ const SignUp = () => {
           <button
             type="button"
             onClick={() => setShowPassword((p) => !p)}
-            className="rounded-xl p-1 text-slate-400 hover:text-white transition"
+            className="
+              rounded-xl border border-white/10 bg-white/5 p-1.5
+              text-slate-300 transition hover:bg-white/10 hover:text-white
+              active:scale-[0.98]
+            "
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
-            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            {showPassword ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
           </button>
         </div>
 
         {password && (
-          <div className="flex items-center justify-between text-xs text-slate-400">
-            <span>Password strength</span>
-            <span
-              className={[
-                "font-semibold",
-                passwordScore <= 1
-                  ? "text-red-300"
-                  : passwordScore === 2
-                  ? "text-yellow-300"
-                  : passwordScore === 3
-                  ? "text-emerald-300"
-                  : "text-cyan-200",
-              ].join(" ")}
-            >
-              {passwordLabel}
-            </span>
-          </div>
-        )}
+          <>
+            <div className="flex items-center justify-between text-xs text-slate-400">
+              <span>Password strength</span>
+              <span
+                className={[
+                  "font-semibold",
+                  passwordScore <= 1
+                    ? "text-red-300"
+                    : passwordScore === 2
+                      ? "text-yellow-300"
+                      : passwordScore === 3
+                        ? "text-emerald-300"
+                        : "text-cyan-200",
+                ].join(" ")}
+              >
+                {passwordLabel}
+              </span>
+            </div>
 
-        {password && (
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-            <div
-              className="h-full rounded-full bg-cyan-300 transition-all"
-              style={{ width: `${(passwordScore / 4) * 100}%` }}
-            />
-          </div>
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+              <div
+                className="h-full rounded-full bg-linear-to-r from-cyan-300 to-emerald-200 transition-all"
+                style={{ width: `${(passwordScore / 4) * 100}%` }}
+              />
+            </div>
+          </>
         )}
       </div>
 
@@ -297,10 +325,18 @@ const SignUp = () => {
           <button
             type="button"
             onClick={() => setShowConfirmPassword((p) => !p)}
-            className="rounded-xl p-1 text-slate-400 hover:text-white transition"
+            className="
+              rounded-xl border border-white/10 bg-white/5 p-1.5
+              text-slate-300 transition hover:bg-white/10 hover:text-white
+              active:scale-[0.98]
+            "
             aria-label={showConfirmPassword ? "Hide password" : "Show password"}
           >
-            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            {showConfirmPassword ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
           </button>
         </div>
 
@@ -310,7 +346,7 @@ const SignUp = () => {
       </div>
 
       {/* DOB + Gender */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row">
         <div className={inputWrap}>
           <Calendar className="h-4 w-4 text-slate-400" />
           <input
@@ -347,18 +383,24 @@ const SignUp = () => {
       <button
         disabled={!canSubmit}
         className="
-          w-full rounded-2xl py-3.5 text-sm font-semibold text-black
-          bg-cyan-300 transition hover:brightness-110 active:scale-[0.99]
-          disabled:bg-white/10 disabled:text-slate-500 disabled:cursor-not-allowed
+          relative w-full rounded-2xl py-3.5 text-sm font-semibold text-black
+          bg-linear-to-r from-cyan-300 to-emerald-200
+          shadow-[0_10px_25px_-18px_rgba(34,211,238,0.65)]
+          transition hover:brightness-110 active:scale-[0.99]
+          disabled:bg-white/10 disabled:text-slate-500 disabled:cursor-not-allowed disabled:shadow-none
         "
       >
+        {loading && (
+          <span className="absolute inset-0 rounded-2xl bg-white/10 animate-pulse" />
+        )}
+
         {loading ? (
-          <span className="flex items-center justify-center gap-2">
+          <span className="relative flex items-center justify-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" />
             Creating...
           </span>
         ) : (
-          "Create account"
+          <span className="relative">Create account</span>
         )}
       </button>
     </form>

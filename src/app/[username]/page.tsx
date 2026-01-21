@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
@@ -14,6 +14,7 @@ import {
   Pencil,
   ImageIcon,
   Play,
+  Sparkles,
 } from "lucide-react";
 
 /* ================= TYPES ================= */
@@ -44,10 +45,14 @@ interface Post {
 
 const ProfilePage = () => {
   const params = useParams();
-  const username = params?.username;
-
-  const { data: session, status } = useSession();
   const router = useRouter();
+  const { data: session, status } = useSession();
+
+  const username = useMemo(() => {
+    const u = params?.username;
+    if (!u || Array.isArray(u)) return null;
+    return u;
+  }, [params]);
 
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -63,16 +68,22 @@ const ProfilePage = () => {
     if (status === "unauthenticated") router.replace("/");
   }, [status, router]);
 
+  const sessionUserName =
+    session?.user && "username" in session.user
+      ? (session.user as { username: string }).username
+      : null;
+
+  const isOwnProfile = sessionUserName === user?.username;
+
   /* ========== FETCH PROFILE ========== */
   useEffect(() => {
     if (status !== "authenticated") return;
-    if (!username || Array.isArray(username)) return;
+    if (!username) return;
 
     const fetchProfile = async () => {
+      setLoading(true);
       try {
-        const res = await axios.get("/api/profile", {
-          params: { username },
-        });
+        const res = await axios.get("/api/profile", { params: { username } });
         setUser(res.data.user);
       } catch {
         setUser(null);
@@ -83,13 +94,6 @@ const ProfilePage = () => {
 
     fetchProfile();
   }, [username, status]);
-
-  const sessionUserName =
-    session?.user && "username" in session.user
-      ? (session.user as { username: string }).username
-      : null;
-
-  const isOwnProfile = sessionUserName === user?.username;
 
   /* ========== FOLLOW STATUS ========== */
   useEffect(() => {
@@ -114,6 +118,7 @@ const ProfilePage = () => {
     if (!user) return;
 
     const fetchPosts = async () => {
+      setPostsLoading(true);
       try {
         const res = await axios.get("/api/posts/all-posts", {
           params: { username: user.username },
@@ -161,12 +166,13 @@ const ProfilePage = () => {
 
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-[#0B1112]">
+      <div className="min-h-screen bg-[#070B0C]">
         <Navbar />
 
-        <main className="flex-1 px-4 py-10">
-          <div className="mx-auto max-w-3xl">
+        <main className="px-4 py-10">
+          <div className="mx-auto max-w-3xl space-y-8">
             <ProfileSkeleton />
+            <PostsSkeleton />
           </div>
         </main>
       </div>
@@ -175,12 +181,12 @@ const ProfilePage = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex flex-col bg-[#0B1112]">
+      <div className="min-h-screen bg-[#070B0C]">
         <Navbar />
 
-        <main className="flex-1 px-4 py-10">
+        <main className="px-4 py-10">
           <div className="mx-auto max-w-3xl">
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-8 text-center">
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center">
               <p className="text-sm text-slate-300">User not found</p>
               <p className="mt-1 text-xs text-slate-500">
                 This profile doesn’t exist or was removed.
@@ -195,24 +201,34 @@ const ProfilePage = () => {
   /* ================= UI ================= */
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0B1112]">
+    <div className="min-h-screen bg-[#070B0C]">
       <Navbar />
 
-      <main className="flex-1">
-        <div className="mx-auto max-w-3xl px-4 py-10">
-          {/* ===== PROFILE HEADER CARD ===== */}
-          <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#0F1718] shadow-[0_0_0_1px_rgba(255,255,255,0.04)]">
-            {/* Soft glow */}
-            <div className="pointer-events-none absolute inset-0">
-              <div className="absolute -top-32 -right-32 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
-              <div className="absolute -bottom-32 -left-32 h-72 w-72 rounded-full bg-emerald-400/10 blur-3xl" />
+      <main className="px-4 py-10">
+        <div className="mx-auto max-w-3xl space-y-8">
+          {/* ===== PROFILE HEADER ===== */}
+          <section className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#0B1213] shadow-[0_0_0_1px_rgba(255,255,255,0.03)]">
+            {/* ===== AUTO GENERATED COVER (NO BANNER NEEDED) ===== */}
+            <div className="relative h-28 w-full overflow-hidden">
+              {/* Soft gradient base */}
+              <div className="absolute inset-0 bg-linear-to-r from-cyan-400/20 via-slate-900/30 to-fuchsia-400/20" />
+
+              {/* Glow blobs */}
+              <div className="absolute -top-10 left-6 h-40 w-40 rounded-full bg-cyan-400/15 blur-3xl" />
+              <div className="absolute -bottom-12 right-6 h-44 w-44 rounded-full bg-fuchsia-400/15 blur-3xl" />
+
+              {/* Noise-style overlay */}
+              <div className="absolute inset-0 opacity-[0.06] bg-[radial-gradient(circle_at_1px_1px,#fff_1px,transparent_0)] bg-size-[18px_18px]" />
+
+              {/* Dark fade */}
+              <div className="absolute inset-0 bg-black/40" />
             </div>
 
-            <div className="relative p-6 sm:p-7">
-              <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-                {/* Left */}
-                <div className="flex items-start gap-4">
-                  <div className="relative h-20 w-20 overflow-hidden rounded-full border border-white/10 ring-2 ring-cyan-300/20 shadow-lg sm:h-24 sm:w-24">
+            <div className="relative px-6 pb-6 sm:px-7">
+              {/* Avatar row */}
+              <div className="-mt-12 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                <div className="flex items-end gap-4">
+                  <div className="relative h-24 w-24 overflow-hidden rounded-full border border-white/10 bg-white/5 ring-4 ring-black/60 shadow-xl sm:h-28 sm:w-28">
                     <Image
                       src={user.avatar || "/avatar-placeholder.png"}
                       alt={user.username}
@@ -221,14 +237,14 @@ const ProfilePage = () => {
                     />
                   </div>
 
-                  <div className="pt-1">
-                    <div className="flex items-center gap-2">
-                      <h1 className="text-xl font-semibold text-white">
+                  <div className="pb-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h1 className="text-xl font-semibold text-white sm:text-2xl">
                         {user.fullName}
                       </h1>
 
                       {user.isVerified && (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-cyan-300/20 bg-cyan-400/10 px-2 py-1 text-xs text-cyan-200">
+                        <span className="inline-flex items-center gap-1 rounded-full border border-cyan-300/25 bg-cyan-400/10 px-2.5 py-1 text-[11px] font-medium text-cyan-200">
                           <BadgeCheck className="h-4 w-4" />
                           Verified
                         </span>
@@ -239,15 +255,19 @@ const ProfilePage = () => {
                       @{user.username}
                     </p>
 
-                    {user.bio && (
-                      <p className="mt-3 max-w-lg text-sm leading-relaxed text-slate-300">
+                    {user.bio ? (
+                      <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-300">
                         {user.bio}
+                      </p>
+                    ) : (
+                      <p className="mt-3 max-w-xl text-sm text-slate-500">
+                        No bio yet.
                       </p>
                     )}
                   </div>
                 </div>
 
-                {/* Right */}
+                {/* Buttons */}
                 <div className="flex items-center gap-2 sm:justify-end">
                   {isOwnProfile ? (
                     <button
@@ -255,8 +275,8 @@ const ProfilePage = () => {
                       className="
                         inline-flex items-center gap-2 rounded-2xl
                         border border-white/10 bg-white/5 px-4 py-2
-                        text-sm text-slate-200 transition
-                        hover:bg-white/10 active:scale-[0.98]
+                        text-sm font-medium text-slate-200
+                        transition hover:bg-white/10 active:scale-[0.98]
                       "
                     >
                       <Pencil className="h-4 w-4" />
@@ -266,30 +286,35 @@ const ProfilePage = () => {
                     <button
                       onClick={toggleFollow}
                       disabled={followLoading}
+                      aria-label={isFollowing ? "Unfollow user" : "Follow user"}
                       className={`
-                        inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold
+                        relative inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold
                         transition active:scale-[0.98]
-                        disabled:cursor-not-allowed disabled:opacity-60
+                        disabled:cursor-not-allowed disabled:opacity-70
                         ${
                           isFollowing
                             ? "border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
-                            : "bg-cyan-300 text-black hover:brightness-110"
+                            : "bg-linear-to-r from-cyan-300 to-emerald-200 text-black hover:brightness-110"
                         }
                       `}
                     >
-                      {followLoading ? (
-                        "Please wait…"
-                      ) : isFollowing ? (
-                        <>
-                          <UserCheck className="h-4 w-4" />
-                          Following
-                        </>
-                      ) : (
-                        <>
-                          <UserPlus className="h-4 w-4" />
-                          Follow
-                        </>
+                      {followLoading && (
+                        <span className="absolute inset-0 animate-pulse rounded-2xl bg-white/10" />
                       )}
+
+                      <span className="relative inline-flex items-center gap-2">
+                        {isFollowing ? (
+                          <>
+                            <UserCheck className="h-4 w-4" />
+                            Following
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus className="h-4 w-4" />
+                            Follow
+                          </>
+                        )}
+                      </span>
                     </button>
                   )}
                 </div>
@@ -304,10 +329,14 @@ const ProfilePage = () => {
             </div>
           </section>
 
-          {/* ===== POSTS GRID ===== */}
-          <section className="mt-8">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-white">Posts</h2>
+          {/* ===== POSTS ===== */}
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-cyan-200" />
+                <h2 className="text-sm font-semibold text-white">Posts</h2>
+              </div>
+
               <p className="text-xs text-slate-500">
                 {postsLoading ? "Loading…" : `${posts.length} total`}
               </p>
@@ -335,8 +364,10 @@ const ProfilePage = () => {
                     onClick={() => router.push(`/post/${post._id}`)}
                     className="
                       group relative aspect-square overflow-hidden rounded-2xl
-                      border border-white/10 bg-white/3
-                      text-left transition hover:border-white/20 active:scale-[0.99]
+                      border border-white/10 bg-white/5
+                      text-left transition
+                      hover:border-white/20 hover:bg-white/6
+                      active:scale-[0.99]
                     "
                   >
                     {/* MEDIA */}
@@ -376,8 +407,9 @@ const ProfilePage = () => {
                     <div
                       className="
                         absolute inset-0 flex items-end p-3
-                        bg-linear-to-t from-black/70 via-black/20 to-transparent
-                        opacity-0 transition duration-200 group-hover:opacity-100
+                        bg-linear-to-t from-black/80 via-black/25 to-transparent
+                        opacity-0 transition duration-200
+                        group-hover:opacity-100
                       "
                     >
                       <p className="line-clamp-3 text-xs text-slate-200">
@@ -398,7 +430,7 @@ const ProfilePage = () => {
 /* ================= SMALL COMPONENTS ================= */
 
 const Stat = ({ label, value }: { label: string; value: number }) => (
-  <div className="rounded-2xl border border-white/10 bg-white/5 py-4 text-center">
+  <div className="rounded-2xl border border-white/10 bg-white/5 py-4 text-center transition hover:bg-white/[0.07]">
     <p className="tabular-nums text-xl font-semibold text-white">{value}</p>
     <p className="mt-1 text-[11px] uppercase tracking-wide text-slate-500">
       {label}
@@ -410,25 +442,28 @@ const Stat = ({ label, value }: { label: string; value: number }) => (
 
 const ProfileSkeleton = () => {
   return (
-    <div className="animate-pulse overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-4">
-          <div className="h-24 w-24 rounded-full bg-white/10" />
+    <div className="overflow-hidden rounded-[28px] border border-white/10 bg-white/5">
+      <div className="relative h-28 w-full animate-pulse bg-white/5" />
+      <div className="p-6 sm:p-7">
+        <div className="-mt-12 flex items-end justify-between gap-4">
+          <div className="flex items-end gap-4">
+            <div className="h-24 w-24 rounded-full border border-white/10 bg-white/10 sm:h-28 sm:w-28" />
 
-          <div className="pt-2">
-            <div className="h-5 w-44 rounded bg-white/10" />
-            <div className="mt-2 h-4 w-28 rounded bg-white/10" />
-            <div className="mt-3 h-3 w-64 rounded bg-white/10" />
+            <div className="pb-2">
+              <div className="h-5 w-44 rounded bg-white/10" />
+              <div className="mt-2 h-4 w-28 rounded bg-white/10" />
+              <div className="mt-3 h-3 w-64 rounded bg-white/10" />
+            </div>
           </div>
+
+          <div className="h-10 w-28 rounded-2xl bg-white/10" />
         </div>
 
-        <div className="h-10 w-28 rounded-2xl bg-white/10" />
-      </div>
-
-      <div className="mt-6 grid grid-cols-3 gap-3">
-        <div className="h-20 rounded-2xl bg-white/10" />
-        <div className="h-20 rounded-2xl bg-white/10" />
-        <div className="h-20 rounded-2xl bg-white/10" />
+        <div className="mt-6 grid grid-cols-3 gap-3">
+          <div className="h-20 rounded-2xl bg-white/10" />
+          <div className="h-20 rounded-2xl bg-white/10" />
+          <div className="h-20 rounded-2xl bg-white/10" />
+        </div>
       </div>
     </div>
   );

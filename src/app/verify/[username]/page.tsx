@@ -4,11 +4,17 @@ import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { ShieldCheck, KeyRound, Loader2, CheckCircle2, XCircle } from "lucide-react";
+import {
+  ShieldCheck,
+  KeyRound,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react";
 
 const inputWrap =
   "flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 " +
-  "transition focus-within:border-cyan-300/40";
+  "transition focus-within:border-cyan-300/40 focus-within:bg-white/[0.07]";
 
 const inputField =
   "w-full bg-transparent text-sm text-white placeholder:text-slate-500 outline-none";
@@ -69,15 +75,23 @@ const VerifyPage = () => {
   };
 
   return (
-    <main className="relative min-h-screen bg-[#0B1112] px-4">
+    <main className="relative min-h-screen bg-[#070B0C] px-4 text-white">
       {/* Background glow */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 h-96 w-96 rounded-full bg-cyan-400/10 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-emerald-400/10 blur-3xl" />
+        <div className="absolute -top-40 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-cyan-400/10 blur-3xl" />
+        <div className="absolute top-56 -right-35 h-96 w-96 rounded-full bg-fuchsia-400/10 blur-3xl" />
+        <div className="absolute -bottom-40 -left-35 h-96 w-96 rounded-full bg-emerald-400/10 blur-3xl" />
       </div>
 
       <div className="relative flex min-h-screen items-center justify-center">
-        <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[#0F1718] p-8 shadow-[0_0_0_1px_rgba(255,255,255,0.04)]">
+        <div
+          className="
+            w-full max-w-md overflow-hidden rounded-[30px]
+            border border-white/10 bg-black/30 p-8
+            backdrop-blur-xl
+            shadow-[0_0_0_1px_rgba(255,255,255,0.03)]
+          "
+        >
           <form onSubmit={verify} className="space-y-4">
             {/* Header */}
             <div className="text-center space-y-2">
@@ -85,7 +99,7 @@ const VerifyPage = () => {
                 <ShieldCheck className="h-5 w-5 text-cyan-300" />
               </div>
 
-              <h1 className="text-xl font-semibold text-white">
+              <h1 className="text-xl font-semibold text-white tracking-tight">
                 Verify your account
               </h1>
 
@@ -95,7 +109,8 @@ const VerifyPage = () => {
 
               {username && (
                 <p className="text-xs text-slate-500">
-                  Verifying: <span className="text-slate-300">@{username}</span>
+                  Verifying:{" "}
+                  <span className="text-slate-300">@{username}</span>
                 </p>
               )}
             </div>
@@ -144,18 +159,24 @@ const VerifyPage = () => {
             <button
               disabled={loading || !verifyCode.trim()}
               className="
-                w-full rounded-2xl py-3.5 text-sm font-semibold text-black
-                bg-cyan-300 transition hover:brightness-110 active:scale-[0.99]
-                disabled:bg-white/10 disabled:text-slate-500 disabled:cursor-not-allowed
+                relative w-full rounded-2xl py-3.5 text-sm font-semibold text-black
+                bg-linear-to-r from-cyan-300 to-emerald-200
+                shadow-[0_10px_25px_-18px_rgba(34,211,238,0.65)]
+                transition hover:brightness-110 active:scale-[0.99]
+                disabled:bg-white/10 disabled:text-slate-500 disabled:cursor-not-allowed disabled:shadow-none
               "
             >
+              {loading && (
+                <span className="absolute inset-0 rounded-2xl bg-white/10 animate-pulse" />
+              )}
+
               {loading ? (
-                <span className="flex items-center justify-center gap-2">
+                <span className="relative flex items-center justify-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Verifying...
                 </span>
               ) : (
-                "Verify account"
+                <span className="relative">Verify account</span>
               )}
             </button>
 
