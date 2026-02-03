@@ -116,7 +116,7 @@ const Navbar = () => {
               >
                 <div className="relative h-9 w-9 overflow-hidden rounded-full ring-1 ring-white/10">
                   <Image
-                    src={session.user?.avatar || "/avatar-placeholder.png"}
+                    src={session.user?.avatar || "https://res.cloudinary.com/arnabcloudinary/image/upload/v1713427478/EazyBuy/Avatar/no-avatar.png"}
                     alt="profile"
                     fill
                     className="object-cover"

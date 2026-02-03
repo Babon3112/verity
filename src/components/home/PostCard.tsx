@@ -179,7 +179,7 @@ const PostCard = ({ post }: { post: FeedPost }) => {
                 "
               >
                 <Image
-                  src={post.author.avatar || "/avatar-placeholder.png"}
+                  src={post.author.avatar || "https://res.cloudinary.com/arnabcloudinary/image/upload/v1713427478/EazyBuy/Avatar/no-avatar.png"}
                   alt={post.author.username}
                   fill
                   className="object-cover"
@@ -212,7 +212,7 @@ const PostCard = ({ post }: { post: FeedPost }) => {
               onClick={() => alert("More options coming soon")}
               aria-label="Post options"
             >
-              <MoreHorizontal className="h-5 w-5" />
+                <MoreHorizontal className="h-5 w-5" />
             </button>
           </div>
 
@@ -357,7 +357,7 @@ const PostCard = ({ post }: { post: FeedPost }) => {
             className="
               w-full max-w-md overflow-hidden rounded-[28px]
               border border-white/10 bg-black/70 backdrop-blur-xl
-              shadow-[0_12px_60px_-25px_rgba(0,0,0,0.9)]
+              shadow-[0_12px_60px_-25px_#000000e5]
             "
           >
             {/* Header */}
@@ -414,7 +414,7 @@ const PostCard = ({ post }: { post: FeedPost }) => {
                       <div className="flex items-center gap-3">
                         <div className="relative h-10 w-10 overflow-hidden rounded-full ring-1 ring-white/10">
                           <Image
-                            src={like.user.avatar || "/avatar-placeholder.png"}
+                            src={like.user.avatar || "https://res.cloudinary.com/arnabcloudinary/image/upload/v1713427478/EazyBuy/Avatar/no-avatar.png"}
                             alt={like.user.username}
                             fill
                             className="object-cover"

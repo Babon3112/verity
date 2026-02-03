@@ -57,29 +57,39 @@ export const authOptions: NextAuthOptions = {
     maxAge: 7 * 24 * 60 * 60,
   },
 
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token._id = user._id?.toString();
-        token.username = user.username;
-        token.isVerified = user.isVerified;
-        token.fullName = user.fullName;
-        token.avatar = user.avatar;
-      }
-      return token;
-    },
+callbacks: {
+  async jwt({ token, user, trigger, session }) {
+    // Initial login
+    if (user) {
+      token._id = user._id?.toString();
+      token.username = user.username;
+      token.isVerified = user.isVerified;
+      token.fullName = user.fullName;
+      token.avatar = user.avatar;
+    }
 
-    async session({ session, token }) {
-      if (session.user) {
-        session.user._id = token._id as string;
-        session.user.username = token.username as string;
-        session.user.isVerified = token.isVerified as boolean;
-        session.user.fullName = token.fullName as string;
-        session.user.avatar = token.avatar as string;
-      }
-      return session;
-    },
+    // When update() is called from useSession()
+    if (trigger === "update" && session) {
+      if (session.fullName) token.fullName = session.fullName;
+      if (session.username) token.username = session.username;
+      if (session.avatar) token.avatar = session.avatar;
+    }
+
+    return token;
   },
+
+  async session({ session, token }) {
+    if (session.user) {
+      session.user._id = token._id as string;
+      session.user.username = token.username as string;
+      session.user.isVerified = token.isVerified as boolean;
+      session.user.fullName = token.fullName as string;
+      session.user.avatar = token.avatar as string;
+    }
+
+    return session;
+  },
+},
 
   pages: {
     signIn: "/signin",

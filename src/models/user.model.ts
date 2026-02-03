@@ -64,7 +64,7 @@ const userSchema = new Schema<User>(
 
     avatar: {
       type: String,
-      default: "https://res.cloudinary.com/arnabcloudinary/image/upload/v1713427478/EazyBuy/Avatar/no-avatar.png",
+      default: "",
     },
 
     bio: {

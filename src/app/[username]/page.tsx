@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import Navbar from "@/components/navbar";
-
+import EditProfileModal from "@/components/EditProfileModal";
 import {
   BadgeCheck,
   UserPlus,
@@ -19,7 +19,7 @@ import {
 
 /* ================= TYPES ================= */
 
-interface UserProfile {
+export interface UserProfile {
   fullName: string;
   username: string;
   email: string;
@@ -29,6 +29,8 @@ interface UserProfile {
   followingCount: number;
   postsCount: number;
   isVerified: boolean;
+  dateOfBirth: string;
+  gender: "male" | "female" | "other";
 }
 
 interface Post {
@@ -46,7 +48,7 @@ interface Post {
 const ProfilePage = () => {
   const params = useParams();
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
 
   const username = useMemo(() => {
     const u = params?.username;
@@ -56,7 +58,7 @@ const ProfilePage = () => {
 
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
 
@@ -230,7 +232,10 @@ const ProfilePage = () => {
                 <div className="flex items-end gap-4">
                   <div className="relative h-24 w-24 overflow-hidden rounded-full border border-white/10 bg-white/5 ring-4 ring-black/60 shadow-xl sm:h-28 sm:w-28">
                     <Image
-                      src={user.avatar || "/avatar-placeholder.png"}
+                      src={
+                        user?.avatar ||
+                        "https://res.cloudinary.com/arnabcloudinary/image/upload/v1713427478/EazyBuy/Avatar/no-avatar.png"
+                      }
                       alt={user.username}
                       fill
                       className="object-cover"
@@ -271,7 +276,7 @@ const ProfilePage = () => {
                 <div className="flex items-center gap-2 sm:justify-end">
                   {isOwnProfile ? (
                     <button
-                      onClick={() => alert("Edit profile coming soon")}
+                      onClick={() => setIsEditOpen(true)}
                       className="
                         inline-flex items-center gap-2 rounded-2xl
                         border border-white/10 bg-white/5 px-4 py-2
@@ -422,6 +427,21 @@ const ProfilePage = () => {
             )}
           </section>
         </div>
+        {isEditOpen && user && (
+          <EditProfileModal
+            user={user}
+            onClose={() => setIsEditOpen(false)}
+            onUpdated={async (updatedUser) => {
+              setUser(updatedUser);
+
+              await update({
+                fullName: updatedUser.fullName,
+                username: updatedUser.username,
+                avatar: updatedUser.avatar,
+              });
+            }}
+          />
+        )}
       </main>
     </div>
   );
