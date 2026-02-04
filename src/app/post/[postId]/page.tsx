@@ -8,6 +8,7 @@ import PostCard from "@/components/home/PostCard";
 import Comments from "@/components/comment";
 import PostCardSkeleton from "@/components/skeletons/PostCardSkeleton";
 import { Sparkles, MessageCircleOff } from "lucide-react";
+import type { FeedPost } from "@/components/home/Feed";
 
 export default function PostDetailsPage() {
   const params = useParams();
@@ -18,7 +19,9 @@ export default function PostDetailsPage() {
     return id;
   }, [params]);
 
-  const [post, setPost] = useState<any>(null);
+
+const [post, setPost] = useState<FeedPost | null>(null);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

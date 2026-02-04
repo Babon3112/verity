@@ -357,7 +357,7 @@ const SignUp = () => {
           />
         </div>
 
-        <div className={inputWrap}>
+        <div className={`${inputWrap} w-full`}>
           <Users className="h-4 w-4 text-slate-400" />
           <select
             className={inputField}

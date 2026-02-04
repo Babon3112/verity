@@ -17,7 +17,7 @@ export async function POST(req: Request) {
   const formData = await req.formData();
   const content = formData.get("content")?.toString().trim();
   const visibility = formData.get("visibility")?.toString() || "public";
-  const file = formData.get("media") as File | null;
+  const files = formData.getAll("media") as File[];
 
   if (!content) {
     return NextResponse.json(
@@ -26,11 +26,34 @@ export async function POST(req: Request) {
     );
   }
 
-  let media;
+  let media = [];
 
-  if (file) {
+const MAX_FILES = 4;
+const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+
+if (files && files.length > 0) {
+
+  // 1️⃣ Limit number of files
+  if (files.length > MAX_FILES) {
+    return NextResponse.json(
+      { message: `Maximum ${MAX_FILES} files allowed` },
+      { status: 400 }
+    );
+  }
+
+  // 2️⃣ Limit file size (ADD THIS HERE)
+  for (const file of files) {
+    if (file.size > MAX_SIZE) {
+      return NextResponse.json(
+        { message: "Each file must be under 5MB" },
+        { status: 400 }
+      );
+    }
+  }
+
+  // 3️⃣ Only now upload
+  for (const file of files) {
     const buffer = Buffer.from(await file.arrayBuffer());
-
     const type = file.type.startsWith("video") ? "video" : "image";
 
     const uploaded = await uploadOnCloudinary(
@@ -39,12 +62,13 @@ export async function POST(req: Request) {
       type
     );
 
-    media = {
+    media.push({
       url: uploaded.url,
       publicId: uploaded.publicId,
       type: uploaded.resourceType,
-    };
+    });
   }
+}
 
   const post = await PostModel.create({
     author: session.user._id,

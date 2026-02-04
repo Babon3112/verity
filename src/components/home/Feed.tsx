@@ -17,10 +17,10 @@ export interface FeedPost {
     fullName: string;
     avatar: string;
   };
-  media?: {
-    url: string;
-    type: "image" | "video";
-  };
+media?: {
+  url: string;
+  type: "image" | "video";
+}[];
 }
 
 const Feed = () => {

@@ -40,7 +40,7 @@ interface Post {
   media?: {
     url: string;
     type: "image" | "video";
-  };
+  }[];
 }
 
 /* ================= COMPONENT ================= */
@@ -376,37 +376,46 @@ const ProfilePage = () => {
                     "
                   >
                     {/* MEDIA */}
-                    {post.media ? (
-                      post.media.type === "image" ? (
-                        <Image
-                          src={post.media.url}
-                          alt="post media"
-                          fill
-                          className="object-contain transition duration-300 group-hover:scale-[1.03]"
-                        />
-                      ) : (
-                        <div className="relative h-full w-full">
-                          <video
-                            src={post.media.url}
-                            className="h-full w-full object-contain"
-                            muted
-                            loop
-                            autoPlay
-                            playsInline
-                          />
-                          <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-xl border border-white/10 bg-black/60 px-2 py-1 text-xs text-white backdrop-blur">
-                            <Play className="h-3.5 w-3.5" />
-                            Video
-                          </div>
-                        </div>
-                      )
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center p-4 text-center">
-                        <p className="line-clamp-5 text-sm text-slate-200">
-                          {post.content}
-                        </p>
-                      </div>
-                    )}
+{post.media && post.media.length > 0 ? (
+  <>
+    {post.media[0].type === "image" ? (
+      <Image
+        src={post.media[0].url}
+        alt="post media"
+        fill
+        className="object-contain transition duration-300 group-hover:scale-[1.03]"
+      />
+    ) : (
+      <div className="relative h-full w-full">
+        <video
+          src={post.media[0].url}
+          className="h-full w-full object-contain"
+          muted
+          loop
+          autoPlay
+          playsInline
+        />
+        <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-xl border border-white/10 bg-black/60 px-2 py-1 text-xs text-white backdrop-blur">
+          <Play className="h-3.5 w-3.5" />
+          Video
+        </div>
+      </div>
+    )}
+
+    {/* Show count badge if more media exist */}
+    {post.media.length > 1 && (
+      <div className="absolute right-3 top-3 rounded-xl bg-black/70 px-2 py-1 text-xs font-medium text-white backdrop-blur">
+        +{post.media.length - 1}
+      </div>
+    )}
+  </>
+) : (
+  <div className="flex h-full w-full items-center justify-center p-4 text-center">
+    <p className="line-clamp-5 text-sm text-slate-200">
+      {post.content}
+    </p>
+  </div>
+)}
 
                     {/* OVERLAY */}
                     <div

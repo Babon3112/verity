@@ -10,12 +10,16 @@ export interface Post extends Document {
     url: string;
     publicId: string;
     type: "image" | "video";
-  };
+  }[];
 
   visibility: "public" | "followers" | "private";
 
   likesCount: number;
   commentsCount: number;
+
+  hideLikesCount: boolean;        // NEW
+  allowComments: boolean;         // NEW
+
   isDeleted: boolean;
 }
 
@@ -36,11 +40,21 @@ const postSchema = new Schema<Post>(
     },
 
     media: {
-      url: String,
-      publicId: String,
-      type: {
-        type: String,
-        enum: ["image", "video"],
+      type: [
+        {
+          url: String,
+          publicId: String,
+          type: {
+            type: String,
+            enum: ["image", "video"],
+          },
+        },
+      ],
+      validate: {
+        validator: function (value: any[]) {
+          return value.length <= 4;
+        },
+        message: "Maximum 4 media files allowed",
       },
     },
 
@@ -60,6 +74,16 @@ const postSchema = new Schema<Post>(
       type: Number,
       default: 0,
       min: 0,
+    },
+
+    hideLikesCount: {
+      type: Boolean,
+      default: false,
+    },
+
+    allowComments: {
+      type: Boolean,
+      default: true,
     },
   },
   { timestamps: true },
