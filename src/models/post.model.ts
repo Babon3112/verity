@@ -17,10 +17,8 @@ export interface Post extends Document {
   likesCount: number;
   commentsCount: number;
 
-  hideLikesCount: boolean;        // NEW
-  allowComments: boolean;         // NEW
-
-  isDeleted: boolean;
+  hideLikesCount: boolean;
+  disableComments: boolean;
 }
 
 const postSchema = new Schema<Post>(
@@ -81,9 +79,9 @@ const postSchema = new Schema<Post>(
       default: false,
     },
 
-    allowComments: {
+    disableComments: {
       type: Boolean,
-      default: true,
+      default: false,
     },
   },
   { timestamps: true },

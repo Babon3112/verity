@@ -10,7 +10,7 @@ export interface UploadResponse {
   resourceType: MediaType;
 }
 
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024;  // 5MB
+const MAX_IMAGE_SIZE = 15 * 1024 * 1024;  // 15MB
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
 
 export const uploadOnCloudinary = async (
@@ -27,7 +27,7 @@ export const uploadOnCloudinary = async (
   }
 
   if (type === "image" && buffer.length > MAX_IMAGE_SIZE) {
-    throw new Error("Image size exceeds 5MB");
+    throw new Error("Image size exceeds 15MB");
   }
 
   if (type === "video" && buffer.length > MAX_VIDEO_SIZE) {

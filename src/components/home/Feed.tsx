@@ -12,15 +12,21 @@ export interface FeedPost {
   createdAt: string;
   likesCount: number;
   commentsCount: number;
+  visibility: "public" | "followers" | "private";
+  hideLikesCount: boolean;
+  disableComments: boolean;
+
   author: {
+    _id: string;
     username: string;
     fullName: string;
     avatar: string;
   };
-media?: {
-  url: string;
-  type: "image" | "video";
-}[];
+
+  media?: {
+    url: string;
+    type: "image" | "video";
+  }[];
 }
 
 const Feed = () => {
@@ -42,6 +48,11 @@ const Feed = () => {
 
     fetchFeed();
   }, []);
+
+  // 🔥 Remove deleted post from feed instantly
+  const handleDeleteFromFeed = (deletedPostId: string) => {
+    setPosts((prev) => prev.filter((p) => p._id !== deletedPostId));
+  };
 
   return (
     <main className="relative min-h-screen bg-[#070B0C] py-10">
@@ -92,7 +103,13 @@ const Feed = () => {
 
           {!loadingFeed &&
             posts.length > 0 &&
-            posts.map((post) => <PostCard key={post._id} post={post} />)}
+            posts.map((post) => (
+              <PostCard
+                key={post._id}
+                post={post}
+                onDeleteSuccess={handleDeleteFromFeed}
+              />
+            ))}
         </div>
       </div>
     </main>
